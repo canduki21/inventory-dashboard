@@ -8,9 +8,10 @@ interface Props {
 }
 
 function stockColor(kg: number) {
-  if (kg <= 0) return { border: '#EF4444', bg: '#FEF2F2', badgeColor: '#DC2626', badgeBg: '#FEE2E2', label: 'OUT' }
-  if (kg <= 5) return { border: '#F59E0B', bg: '#FFFBEB', badgeColor: '#B45309', badgeBg: '#FEF3C7', label: 'LOW' }
-  return           { border: '#16A34A', bg: '#F0FDF4', badgeColor: '#15803D', badgeBg: '#DCFCE7', label: 'OK'  }
+  if (kg <= 0)  return { border: '#EF4444', bg: '#FEF2F2', badgeColor: '#DC2626', badgeBg: '#FEE2E2', label: 'OUT' }
+  if (kg <= 10) return { border: '#F59E0B', bg: '#FFFBEB', badgeColor: '#B45309', badgeBg: '#FEF3C7', label: 'LOW' }
+  if (kg <= 15) return { border: '#EA580C', bg: '#FFF7ED', badgeColor: '#C2410C', badgeBg: '#FFEDD5', label: 'MOD' }
+  return                { border: '#16A34A', bg: '#F0FDF4', badgeColor: '#15803D', badgeBg: '#DCFCE7', label: 'OK'  }
 }
 
 export default function BinCard({ product, onEdit, onDelete }: Props) {
