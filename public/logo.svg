@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <rect width="120" height="40" rx="6" fill="#0F172A"/>
+  <text x="10" y="27" font-family="system-ui, sans-serif" font-size="18" font-weight="800" letter-spacing="3" fill="white">SRT</text>
+  <circle cx="100" cy="20" r="10" fill="none" stroke="#22C55E" stroke-width="2"/>
+  <path d="M100 10 L103 17 L110 17 L104.5 22 L107 29 L100 24.5 L93 29 L95.5 22 L90 17 L97 17 Z" fill="#22C55E" opacity="0.8"/>
+</svg>

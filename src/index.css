@@ -4,9 +4,9 @@
 
 body {
   margin: 0;
-  background: #020617;
-  font-family: 'Fira Sans', system-ui, sans-serif;
-  color: #F8FAFC;
+  background: #F1F5F9;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #0F172A;
 }
 
-.font-mono { font-family: 'Fira Code', monospace; }
+.font-mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }

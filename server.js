@@ -46,10 +46,10 @@ app.get('/api/inventory', (req, res) => {
 
 // POST /api/inventory/product — add a product
 app.post('/api/inventory/product', (req, res) => {
-  const { name, sku, quantity } = req.body
-  if (!name || quantity == null) return res.status(400).json({ error: 'name and quantity required' })
+  const { name, sku, qty1kg, qty5kg, unit } = req.body
+  if (!name) return res.status(400).json({ error: 'name required' })
   const db = readDB()
-  const product = { id: randomUUID(), name, sku: sku ?? '', quantity: Number(quantity) }
+  const product = { id: randomUUID(), name, sku: sku ?? '', qty1kg: Number(qty1kg ?? 0), qty5kg: Number(qty5kg ?? 0), unit: Number(unit ?? 1) }
   db.products.push(product)
   writeDB(db)
   res.json(product)
@@ -60,7 +60,15 @@ app.put('/api/inventory/product/:id', (req, res) => {
   const db = readDB()
   const idx = db.products.findIndex(p => p.id === req.params.id)
   if (idx === -1) return res.status(404).json({ error: 'not found' })
-  db.products[idx] = { ...db.products[idx], ...req.body, id: req.params.id }
+  const { name, sku, qty1kg, qty5kg } = req.body
+  db.products[idx] = {
+    ...db.products[idx],
+    ...(name != null && { name }),
+    ...(sku != null && { sku }),
+    ...(qty1kg != null && { qty1kg: Number(qty1kg) }),
+    ...(qty5kg != null && { qty5kg: Number(qty5kg) }),
+    id: req.params.id,
+  }
   writeDB(db)
   res.json(db.products[idx])
 })
@@ -95,7 +103,7 @@ app.post('/api/inventory/import', async (req, res) => {
           ? `${p.title} — ${v.title}`
           : p.title
 
-        db.products.push({ id: randomUUID(), name, sku, quantity: 0 })
+        db.products.push({ id: randomUUID(), name, sku, qty1kg: 0, qty5kg: 0, unit: 1 })
         existingSkus.add(skuKey)
         added++
       }
@@ -108,39 +116,66 @@ app.post('/api/inventory/import', async (req, res) => {
   }
 })
 
-// POST /api/inventory/sync — pull new Shopify orders and subtract quantities
+// POST /api/inventory/sync — preview new orders (no DB writes)
 app.post('/api/inventory/sync', async (req, res) => {
   try {
     const db = readDB()
     const { orders } = await shopifyGet(
-      '/orders.json?status=any&limit=250&fields=id,order_number,created_at,line_items'
+      '/orders.json?status=any&limit=250&fields=id,order_number,line_items'
     )
-
     const newOrders = orders.filter(o => !db.processedOrderIds.includes(o.id))
-    const log = []
 
+    const items = []
     for (const order of newOrders) {
       for (const item of order.line_items) {
-        const sku = (item.sku ?? '').trim().toLowerCase()
-        const match = db.products.find(p => p.sku.trim().toLowerCase() === sku)
-        if (match) {
-          const before = match.quantity
-          match.quantity = Math.max(0, match.quantity - item.quantity)
-          log.push({
-            order: order.order_number,
-            product: match.name,
-            sku: match.sku,
-            deducted: item.quantity,
-            before,
-            after: match.quantity,
-          })
-        }
+        const sku = (item.sku ?? '').trim()
+        if (!sku) continue
+        const match = db.products.find(p => p.sku.trim().toLowerCase() === sku.toLowerCase())
+        items.push({
+          orderId: order.id,
+          orderNumber: order.order_number,
+          sku,
+          qty: item.quantity,
+          productId: match?.id ?? null,
+          productName: match?.name ?? sku,
+        })
       }
-      db.processedOrderIds.push(order.id)
+    }
+
+    res.json({ newOrderCount: newOrders.length, items, orderIds: newOrders.map(o => o.id) })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// POST /api/inventory/sync/apply — apply packaging assignments and mark orders processed
+app.post('/api/inventory/sync/apply', (req, res) => {
+  try {
+    const { assignments = [], orderIds = [] } = req.body
+    const db = readDB()
+    const log = []
+
+    for (const a of assignments) {
+      if (!a.productId) continue
+      if (a.packageType === 'bucket') {
+        log.push({ order: a.orderNumber, product: a.productName, sku: a.sku, deducted: a.qty, packageType: 'bucket', skipped: true })
+        continue
+      }
+      const match = db.products.find(p => p.id === a.productId)
+      if (match) {
+        const field = a.packageType === '5kg' ? 'qty5kg' : 'qty1kg'
+        const before = match[field]
+        match[field] = Math.max(0, before - a.qty)
+        log.push({ order: a.orderNumber, product: match.name, sku: match.sku, deducted: a.qty, before, after: match[field], packageType: a.packageType })
+      }
+    }
+
+    for (const id of orderIds) {
+      if (!db.processedOrderIds.includes(id)) db.processedOrderIds.push(id)
     }
 
     writeDB(db)
-    res.json({ synced: newOrders.length, log })
+    res.json({ log })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

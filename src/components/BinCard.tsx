@@ -1,3 +1,4 @@
+import { totalKg } from '../types'
 import type { Product } from '../types'
 
 interface Props {
@@ -6,61 +7,76 @@ interface Props {
   onDelete: (id: string) => void
 }
 
-function stockColor(qty: number) {
-  if (qty <= 0) return { border: '#EF4444', bg: '#EF444412', badge: 'OUT', badgeColor: '#F87171', badgeBg: '#EF444422' }
-  if (qty <= 5) return { border: '#EAB308', bg: '#EAB30812', badge: 'LOW', badgeColor: '#FCD34D', badgeBg: '#EAB30822' }
-  return             { border: '#22C55E', bg: '#22C55E0D', badge: 'OK',  badgeColor: '#4ADE80', badgeBg: '#22C55E22' }
+function stockColor(kg: number) {
+  if (kg <= 0) return { border: '#EF4444', bg: '#FEF2F2', badgeColor: '#DC2626', badgeBg: '#FEE2E2', label: 'OUT' }
+  if (kg <= 5) return { border: '#F59E0B', bg: '#FFFBEB', badgeColor: '#B45309', badgeBg: '#FEF3C7', label: 'LOW' }
+  return           { border: '#16A34A', bg: '#F0FDF4', badgeColor: '#15803D', badgeBg: '#DCFCE7', label: 'OK'  }
 }
 
 export default function BinCard({ product, onEdit, onDelete }: Props) {
-  const c = stockColor(product.quantity)
+  const kg = totalKg(product)
+  const c  = stockColor(kg)
 
   return (
-    <div className="relative flex flex-col rounded-lg overflow-hidden transition-all duration-200 hover:scale-[1.02]"
-      style={{ background: '#0F172A', borderLeft: `4px solid ${c.border}`, boxShadow: `0 0 0 1px #1E293B, 0 2px 8px rgba(0,0,0,0.4)` }}>
-
-      {/* Color band */}
-      <div className="w-full h-1.5" style={{ background: c.border, opacity: 0.4 }} />
-
-      {/* Body */}
-      <div className="flex flex-col gap-1.5 px-3 pt-3 pb-2 flex-1" style={{ background: c.bg }}>
-        <div className="flex items-start justify-between gap-1">
-          <p className="text-xs font-semibold leading-tight" style={{ color: '#E2E8F0' }}>{product.name}</p>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0"
-            style={{ background: c.badgeBg, color: c.badgeColor }}>{c.badge}</span>
-        </div>
-        {product.sku && (
-          <p className="text-[10px] font-mono" style={{ color: '#475569' }}>{product.sku}</p>
-        )}
+    <div
+      className="flex flex-col rounded-lg overflow-hidden"
+      style={{
+        background: '#FFFFFF',
+        border: `1px solid #E2E8F0`,
+        borderTop: `3px solid ${c.border}`,
+        boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+      }}
+    >
+      {/* Name + badge */}
+      <div className="flex items-start justify-between gap-1 px-2.5 pt-2 pb-1" style={{ background: c.bg }}>
+        <p className="text-[11px] font-semibold leading-tight line-clamp-2 flex-1" style={{ color: '#1E293B' }}>
+          {product.name}
+        </p>
+        <span className="text-[8px] font-bold tracking-wider px-1.5 py-0.5 rounded shrink-0 mt-0.5"
+          style={{ background: c.badgeBg, color: c.badgeColor }}>
+          {c.label}
+        </span>
       </div>
 
-      {/* Quantity */}
-      <div className="px-3 py-2" style={{ borderTop: '1px solid #1E293B20' }}>
-        <span className="text-3xl font-bold font-mono leading-none" style={{ color: c.border }}>
-          {product.quantity}
-        </span>
-        <span className="text-[10px] ml-1 font-mono" style={{ color: '#334155' }}>units</span>
+      {/* SKU */}
+      {product.sku ? (
+        <p className="text-[9px] font-mono px-2.5 pb-1" style={{ color: '#94A3B8' }}>{product.sku}</p>
+      ) : (
+        <div className="pb-1" />
+      )}
+
+      {/* Counts */}
+      <div className="px-2.5 py-1.5 flex items-center gap-1" style={{ borderTop: '1px solid #F1F5F9' }}>
+        <span className="text-[11px] font-bold font-mono" style={{ color: '#6366F1' }}>{product.qty1kg}</span>
+        <span className="text-[8px] font-mono" style={{ color: '#94A3B8' }}>×1kg</span>
+        <span className="text-[9px] mx-0.5" style={{ color: '#E2E8F0' }}>·</span>
+        <span className="text-[11px] font-bold font-mono" style={{ color: '#D97706' }}>{product.qty5kg}</span>
+        <span className="text-[8px] font-mono" style={{ color: '#94A3B8' }}>×5kg</span>
+        <div className="ml-auto flex items-baseline gap-0.5">
+          <span className="text-base font-bold font-mono leading-none" style={{ color: c.badgeColor }}>{kg}</span>
+          <span className="text-[8px] font-mono" style={{ color: '#94A3B8' }}>kg</span>
+        </div>
       </div>
 
       {/* Actions */}
-      <div className="flex" style={{ borderTop: '1px solid #1E293B' }}>
+      <div className="flex" style={{ borderTop: '1px solid #F1F5F9' }}>
         <button
           onClick={() => onEdit(product)}
-          className="flex-1 py-2 text-[10px] font-bold tracking-wide cursor-pointer transition-colors duration-150"
-          style={{ color: '#475569' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = '#F8FAFC' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569' }}
+          className="flex-1 py-1 text-[9px] font-bold tracking-wide cursor-pointer transition-colors duration-150"
+          style={{ color: '#94A3B8' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.color = '#0F172A' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94A3B8' }}
           aria-label={`Edit ${product.name}`}
         >
           EDIT
         </button>
-        <div style={{ width: '1px', background: '#1E293B' }} />
+        <div style={{ width: '1px', background: '#F1F5F9' }} />
         <button
           onClick={() => onDelete(product.id)}
-          className="flex-1 py-2 text-[10px] font-bold tracking-wide cursor-pointer transition-colors duration-150"
-          style={{ color: '#475569' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#EF444415'; e.currentTarget.style.color = '#F87171' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569' }}
+          className="flex-1 py-1 text-[9px] font-bold tracking-wide cursor-pointer transition-colors duration-150"
+          style={{ color: '#94A3B8' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#EF4444' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94A3B8' }}
           aria-label={`Delete ${product.name}`}
         >
           DEL
