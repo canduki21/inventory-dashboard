@@ -120,8 +120,9 @@ app.post('/api/inventory/import', async (req, res) => {
 app.post('/api/inventory/sync', async (req, res) => {
   try {
     const db = readDB()
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { orders } = await shopifyGet(
-      '/orders.json?status=any&limit=250&fields=id,order_number,line_items'
+      `/orders.json?fulfillment_status=unfulfilled&created_at_min=${since}&limit=250&fields=id,order_number,line_items`
     )
     const newOrders = orders.filter(o => !db.processedOrderIds.includes(o.id))
 
