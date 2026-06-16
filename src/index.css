@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #020617;
+  font-family: 'Fira Sans', system-ui, sans-serif;
+  color: #F8FAFC;
+}
+
+.font-mono { font-family: 'Fira Code', monospace; }
