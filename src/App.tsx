@@ -141,7 +141,7 @@ export default function App() {
           {/* Logo + title */}
           <div className="flex items-center gap-3">
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="SRT"
               style={{ height: 36, width: 'auto' }}
               onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
