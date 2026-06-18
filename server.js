@@ -121,9 +121,9 @@ app.post('/api/inventory/sync', async (req, res) => {
   try {
     const db = readDB()
     const { orders } = await shopifyGet(
-      `/orders.json?status=open&limit=250&fields=id,order_number,fulfillment_status,line_items`
+      `/orders.json?fulfillment_status=unfulfilled&status=open&limit=250&fields=id,order_number,fulfillment_status,line_items`
     )
-    const newOrders = orders.filter(o => !db.processedOrderIds.includes(o.id))
+    const newOrders = orders.filter(o => o.fulfillment_status === null && !db.processedOrderIds.includes(o.id))
 
     const items = []
     for (const order of newOrders) {
