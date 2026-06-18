@@ -267,19 +267,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Publications disclaimer ── */}
-      <div className="max-w-screen-2xl mx-auto px-6 pt-4">
-        <div className="rounded-xl px-5 py-3 flex items-start gap-3"
-          style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-          <span className="text-base shrink-0 mt-0.5">📚</span>
-          <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>
-            <span className="font-bold" style={{ color: '#0F172A' }}>800+ peer-reviewed publications</span>
-            {' '}referencing SRT simulants are freely accessible through your institution or public repositories.
-            All SRT-referenced literature is open to use for research and education.
-          </p>
-        </div>
-      </div>
-
       {/* ── Main ── */}
       <main className="max-w-screen-2xl mx-auto px-4 py-6">
 
